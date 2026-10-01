@@ -10,9 +10,10 @@ import {
   Cpu,
   Layers,
   Sparkles,
+  PanelLeft,
+  PanelRight,
 } from 'lucide-react';
 import { AgentMode, ModelInfo, ProviderConfig } from '../shared/types';
-import { PanelLeft, PanelRight } from 'lucide-react';
 import { DcodeLoader } from './DcodeLoader';
 
 interface TopBarProps {

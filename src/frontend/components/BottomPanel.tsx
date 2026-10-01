@@ -55,14 +55,25 @@ export const BottomPanel: React.FC<BottomPanelProps> = ({
       const fitAddon = new FitAddon();
       term.loadAddon(fitAddon);
       term.open(terminalRef.current);
-      fitAddon.fit();
+      requestAnimationFrame(() => {
+        try {
+          fitAddon.fit();
+        } catch {}
+      });
       xtermInstance.current = term;
 
       // Connect to backend WebSocket for real shell execution
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${protocol}//${window.location.host}/ws`;
-      const ws = new WebSocket(wsUrl);
-      wsRef.current = ws;
+      const backendHost = window.location.port === '5173' ? `${window.location.hostname}:3002` : window.location.host;
+      const wsUrl = `${protocol}//${backendHost}/ws`;
+      let ws: WebSocket;
+      try {
+        ws = new WebSocket(wsUrl);
+        wsRef.current = ws;
+      } catch (err) {
+        console.warn('WS terminal connection warning:', err);
+        return;
+      }
 
       ws.onopen = () => {
         ws.send(JSON.stringify({ type: 'terminal_init', termId: 'term-main' }));
@@ -83,12 +94,16 @@ export const BottomPanel: React.FC<BottomPanelProps> = ({
         }
       });
 
-      const handleResize = () => fitAddon.fit();
+      const handleResize = () => {
+        try {
+          fitAddon.fit();
+        } catch {}
+      };
       window.addEventListener('resize', handleResize);
 
       return () => {
         window.removeEventListener('resize', handleResize);
-        ws.close();
+        if (ws) ws.close();
         term.dispose();
         xtermInstance.current = null;
       };

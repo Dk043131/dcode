@@ -18,7 +18,7 @@ import {
   PermissionRequest,
   ProjectHealthStatus,
   ProviderConfig,
-} from './shared/types';
+} from '../shared/types';
 
 export default function App() {
   // App State
@@ -87,7 +87,13 @@ export default function App() {
 
     // Setup WebSocket for agent broadcasts
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
+    const backendHost = window.location.port === '5173' ? `${window.location.hostname}:3002` : window.location.host;
+    let ws: WebSocket;
+    try {
+      ws = new WebSocket(`${protocol}//${backendHost}/ws`);
+    } catch {
+      return;
+    }
 
     ws.onmessage = e => {
       try {
@@ -118,7 +124,7 @@ export default function App() {
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
-      ws.close();
+      if (ws) ws.close();
     };
   }, []);
 
@@ -136,6 +142,13 @@ export default function App() {
       const res = await fetch('/api/files');
       const data = await res.json();
       setFiles(data);
+      // Auto open README.md if no tab is open yet
+      if (data && data.length > 0) {
+        const readme = data.find((f: any) => f.name.toLowerCase() === 'readme.md');
+        if (readme && openTabs.length === 0) {
+          handleFileSelect(readme.path);
+        }
+      }
     } catch {}
   };
 

@@ -17,14 +17,17 @@ export const DcodeLoader: React.FC<DcodeLoaderProps> = ({ size = 'md', text = 'L
       {/* Unique Futuristic Dcode Quantum Pulse Ring */}
       <div className={`relative flex items-center justify-center ${sizeClasses[size]}`}>
         {/* Outer glowing pulsing orb */}
-        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-500 opacity-25"></span>
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-500 opacity-25" />
         
         {/* Dual spinning holographic arcs */}
         <div className="w-full h-full rounded-full border-2 border-transparent border-t-blue-500 border-r-cyan-400 animate-spin" />
-        <div className="absolute w-3/4 h-3/4 rounded-full border border-transparent border-b-indigo-400 border-l-blue-400 animate-spin [animation-direction:reverse] [animation-duration:1.5s]" />
+        <div
+          className="absolute w-3/4 h-3/4 rounded-full border border-transparent border-b-indigo-400 border-l-blue-400 animate-spin"
+          style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}
+        />
         
         {/* Center core pulse */}
-        <div className="absolute w-1.5 h-1.5 bg-blue-400 rounded-full shadow-[0_0_8px_#3b82f6] animate-pulse" />
+        <div className="absolute w-1.5 h-1.5 bg-blue-400 rounded-full shadow-sm animate-pulse" />
       </div>
 
       {text && (
