@@ -60,6 +60,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   memoryNotes = [],
   onAddMemoryNote,
   rules = [],
+  plugins = [],
+  onTogglePlugin,
+  isOpen = true,
+  onToggleOpen,
 }) => {
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({
     'src': true,
@@ -379,12 +383,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   Key patterns and architecture notes preserved for the agent across sessions.
                 </p>
                 <div className="space-y-1.5">
-                  {memoryNotes.map((note, idx) => (
+                  {(memoryNotes || []).map((note, idx) => (
                     <div key={idx} className="bg-dcode-bg border border-dcode-border p-2 rounded text-zinc-300">
                       {note}
                     </div>
                   ))}
-                  {memoryNotes.length === 0 && (
+                  {(!memoryNotes || memoryNotes.length === 0) && (
                     <div className="text-zinc-600 italic">No custom memories yet.</div>
                   )}
                 </div>
@@ -415,7 +419,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 Deterministic policy filters enforcing execution boundaries.
               </p>
               <div className="space-y-1.5">
-                {rules.map(r => (
+                {(rules || []).map(r => (
                   <div key={r.id} className="bg-dcode-bg border border-dcode-border p-2 rounded">
                     <div className="flex items-center justify-between mb-1">
                       <span className="font-mono text-blue-400 font-medium">{r.pattern}</span>
