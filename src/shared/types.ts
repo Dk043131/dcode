@@ -194,3 +194,16 @@ export interface ProjectHealthStatus {
   vulnerabilitiesDetected?: number;
   dirtyFilesCount?: number;
 }
+
+export interface PluginDefinition {
+  id: string;
+  name: string;
+  version: string;
+  description: string;
+  author: string;
+  icon?: string;
+  enabled: boolean;
+  category: 'productivity' | 'testing' | 'security' | 'theme' | 'language';
+  downloads?: number;
+  rating?: number;
+}

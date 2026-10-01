@@ -12,6 +12,8 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { AgentMode, ModelInfo, ProviderConfig } from '../shared/types';
+import { PanelLeft, PanelRight } from 'lucide-react';
+import { DcodeLoader } from './DcodeLoader';
 
 interface TopBarProps {
   workspaceName: string;
@@ -26,6 +28,10 @@ interface TopBarProps {
   onOpenSettings: () => void;
   activeStatusText: string;
   providerStatus: string;
+  isSidebarOpen: boolean;
+  onToggleSidebar: () => void;
+  isAgentPanelOpen: boolean;
+  onToggleAgentPanel: () => void;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
@@ -41,13 +47,27 @@ export const TopBar: React.FC<TopBarProps> = ({
   onOpenSettings,
   activeStatusText,
   providerStatus,
+  isSidebarOpen,
+  onToggleSidebar,
+  isAgentPanelOpen,
+  onToggleAgentPanel,
 }) => {
   const modes: AgentMode[] = ['ASK', 'PLAN', 'CODE', 'AUTONOMOUS', 'REVIEW'];
 
   return (
     <header className="h-11 bg-dcode-bg border-b border-dcode-border flex items-center justify-between px-3 select-none text-xs">
-      {/* Left: Brand & Workspace */}
+      {/* Left: Brand & Workspace & Panel Slide Toggle */}
       <div className="flex items-center space-x-3">
+        <button
+          onClick={onToggleSidebar}
+          className={`p-1 rounded transition-colors ${
+            isSidebarOpen ? 'text-blue-400 bg-dcode-surface' : 'text-zinc-500 hover:text-zinc-200'
+          }`}
+          title="Toggle Sidebar (Slide Hide)"
+        >
+          <PanelLeft className="w-4 h-4" />
+        </button>
+
         <div className="flex items-center space-x-2 font-bold tracking-wider text-sm text-white">
           <div className="w-5 h-5 bg-blue-600 rounded flex items-center justify-center text-white shadow-sm font-mono text-xs">
             D
@@ -84,14 +104,13 @@ export const TopBar: React.FC<TopBarProps> = ({
         </button>
 
         {activeStatusText && (
-          <div className="hidden lg:flex items-center space-x-1.5 px-2 py-0.5 bg-blue-950/40 border border-blue-900/50 rounded text-blue-300 text-[11px] animate-pulse">
-            <Sparkles className="w-3 h-3" />
-            <span className="truncate max-w-[200px]">{activeStatusText}</span>
+          <div className="hidden lg:flex items-center space-x-2 px-2.5 py-1 bg-blue-950/40 border border-blue-900/50 rounded text-blue-300 text-xs">
+            <DcodeLoader size="sm" text={activeStatusText === 'Agent analyzing task...' ? 'Loading...' : activeStatusText} />
           </div>
         )}
       </div>
 
-      {/* Right: Mode Selector, Model Selector, Run/Stop, Settings */}
+      {/* Right: Mode Selector, Model Selector, Run/Stop, Settings & Agent Panel Slide Toggle */}
       <div className="flex items-center space-x-2">
         {/* Mode Selector */}
         <div className="flex bg-dcode-surface p-0.5 rounded border border-dcode-border">
@@ -148,6 +167,16 @@ export const TopBar: React.FC<TopBarProps> = ({
           title="Dcode Settings"
         >
           <SettingsIcon className="w-4 h-4" />
+        </button>
+
+        <button
+          onClick={onToggleAgentPanel}
+          className={`p-1 rounded transition-colors ${
+            isAgentPanelOpen ? 'text-blue-400 bg-dcode-surface' : 'text-zinc-500 hover:text-zinc-200'
+          }`}
+          title="Toggle AI Agent Panel (Slide Hide)"
+        >
+          <PanelRight className="w-4 h-4" />
         </button>
       </div>
     </header>

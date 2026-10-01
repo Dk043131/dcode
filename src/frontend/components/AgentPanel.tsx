@@ -11,6 +11,9 @@ import {
   ShieldAlert,
   ChevronDown,
   ChevronUp,
+  PanelRightClose,
+  PanelRightOpen,
+  ChevronRight,
 } from 'lucide-react';
 import {
   AgentMessage,
@@ -18,6 +21,7 @@ import {
   AgentSession,
   PermissionRequest,
 } from '../shared/types';
+import { DcodeLoader } from './DcodeLoader';
 
 interface AgentPanelProps {
   session?: AgentSession;
@@ -28,6 +32,8 @@ interface AgentPanelProps {
   isRunning: boolean;
   onStop: () => void;
   activeExplanation?: string;
+  isOpen: boolean;
+  onToggleOpen: () => void;
 }
 
 export const AgentPanel: React.FC<AgentPanelProps> = ({
@@ -39,6 +45,8 @@ export const AgentPanel: React.FC<AgentPanelProps> = ({
   isRunning,
   onStop,
   activeExplanation,
+  isOpen,
+  onToggleOpen,
 }) => {
   const [inputPrompt, setInputPrompt] = useState('');
   const [expandedTools, setExpandedTools] = useState<Record<string, boolean>>({});
@@ -63,7 +71,11 @@ export const AgentPanel: React.FC<AgentPanelProps> = ({
   };
 
   return (
-    <div className="w-96 flex flex-col h-full bg-dcode-surface border-l border-dcode-border select-none">
+    <div
+      className={`flex flex-col h-full bg-dcode-surface border-l border-dcode-border select-none transition-all duration-200 overflow-hidden ${
+        isOpen ? 'w-96 opacity-100' : 'w-0 opacity-0 border-l-0'
+      }`}
+    >
       {/* Header */}
       <div className="h-9 px-3 border-b border-dcode-border flex items-center justify-between text-xs">
         <div className="flex items-center space-x-2">
@@ -73,8 +85,17 @@ export const AgentPanel: React.FC<AgentPanelProps> = ({
             {session?.mode || 'CODE'}
           </span>
         </div>
-        <div className="text-[11px] text-zinc-500 font-mono">
-          Iter: {session?.currentIteration || 0}/{session?.autonomyLimit || 8}
+        <div className="flex items-center space-x-2">
+          <div className="text-[11px] text-zinc-500 font-mono">
+            Iter: {session?.currentIteration || 0}/{session?.autonomyLimit || 8}
+          </div>
+          <button
+            onClick={onToggleOpen}
+            className="p-1 hover:bg-dcode-surface2 rounded text-zinc-400 hover:text-zinc-100"
+            title="Hide Agent Panel"
+          >
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
         </div>
       </div>
 
@@ -212,11 +233,10 @@ export const AgentPanel: React.FC<AgentPanelProps> = ({
           </div>
         ))}
 
-        {/* Live Action Explanation */}
-        {isRunning && activeExplanation && (
-          <div className="flex items-center space-x-2 p-2 bg-blue-950/20 border border-blue-900/40 rounded text-blue-300 text-xs">
-            <div className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin flex-shrink-0" />
-            <span className="italic truncate">{activeExplanation}</span>
+        {/* Live Action Explanation with Unique DcodeLoader Animation */}
+        {isRunning && (
+          <div className="p-2.5 bg-blue-950/20 border border-blue-900/40 rounded-lg">
+            <DcodeLoader size="sm" text={activeExplanation || 'Loading...'} />
           </div>
         )}
 

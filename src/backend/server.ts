@@ -13,6 +13,7 @@ import { ProviderManager } from './providers/index.js';
 import { ToolRegistry } from './tools/index.js';
 import { ContextEngine } from './agent/context.js';
 import { AgentOrchestrator } from './agent/orchestrator.js';
+import { PluginManager } from './plugins/index.js';
 
 dotenv.config();
 
@@ -20,7 +21,7 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server, path: '/ws' });
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3002;
 const WORKSPACE_ROOT = process.env.WORKSPACE_ROOT || process.cwd();
 
 // Core Systems
@@ -29,6 +30,7 @@ const providerManager = new ProviderManager();
 const toolRegistry = new ToolRegistry(WORKSPACE_ROOT, security);
 const contextEngine = new ContextEngine(WORKSPACE_ROOT);
 const orchestrator = new AgentOrchestrator(providerManager, toolRegistry, security, contextEngine);
+const pluginManager = new PluginManager();
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
@@ -169,6 +171,16 @@ app.get('/api/checkpoints', (req, res) => {
 app.post('/api/checkpoints/:id/rollback', async (req, res) => {
   const ok = await toolRegistry.rollbackCheckpoint(req.params.id);
   res.json({ success: ok });
+});
+
+// Plugins & Marketplace API
+app.get('/api/plugins', (req, res) => {
+  res.json(pluginManager.getPlugins());
+});
+
+app.post('/api/plugins/:id/toggle', (req, res) => {
+  const updated = pluginManager.togglePlugin(req.params.id);
+  res.json({ success: !!updated, plugin: updated });
 });
 
 // Sessions API

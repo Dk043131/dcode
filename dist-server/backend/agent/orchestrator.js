@@ -81,7 +81,7 @@ class AgentOrchestrator {
         callbacks.onMessageUpdate(session, userMsg);
         callbacks.onStatusChange('running', 'Analyzing workspace and planning task...');
         // 2. Gather Context
-        callbacks.onActionExplanation('Gathering codebase context and rules...');
+        callbacks.onActionExplanation('Loading codebase...');
         await this.contextEngine.indexCodebase();
         const contextSnippet = this.contextEngine.getContextOverview(userPrompt);
         // Filter tools based on Agent Mode
@@ -287,31 +287,31 @@ Workflow Instructions:
     getActionExplanation(toolName, args) {
         switch (toolName) {
             case 'read_file':
-                return `Reading ${args.path || 'file'}`;
+                return `Loading ${args.path ? args.path.split('/').pop() : 'file'}...`;
             case 'write_file':
-                return `Writing file ${args.path || ''}`;
+                return `Saving ${args.path ? args.path.split('/').pop() : 'file'}...`;
             case 'edit_file':
-                return `Applying modifications to ${args.path || ''}`;
+                return `Updating ${args.path ? args.path.split('/').pop() : 'file'}...`;
             case 'delete_file':
-                return `Deleting ${args.path || ''}`;
+                return `Deleting ${args.path ? args.path.split('/').pop() : 'file'}...`;
             case 'list_directory':
-                return `Listing files in ${args.path || 'project root'}`;
+                return 'Scanning files...';
             case 'search_code':
-                return `Searching codebase for pattern "${args.query}"`;
+                return `Searching code...`;
             case 'find_symbol':
-                return `Locating symbol "${args.symbol}"`;
+                return `Locating symbol...`;
             case 'run_command':
-                return `Executing: ${args.command}`;
+                return `Running command...`;
             case 'run_tests':
-                return 'Running test suite';
+                return 'Running tests...';
             case 'run_linter':
-                return 'Running codebase linter';
+                return 'Checking linter...';
             case 'run_typecheck':
-                return 'Running type diagnostics';
+                return 'Checking types...';
             case 'run_build':
-                return 'Executing build verification';
+                return 'Building...';
             default:
-                return `Running ${toolName}`;
+                return 'Loading...';
         }
     }
 }

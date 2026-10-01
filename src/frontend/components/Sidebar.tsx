@@ -19,7 +19,7 @@ import {
   Plus,
   Shield,
 } from 'lucide-react';
-import { FileTreeNode, ProjectHealthStatus } from '../shared/types';
+import { FileTreeNode, PluginDefinition, ProjectHealthStatus } from '../shared/types';
 
 export type SidebarTab =
   | 'explorer'
@@ -27,7 +27,7 @@ export type SidebarTab =
   | 'git'
   | 'debug'
   | 'tasks'
-  | 'sessions'
+  | 'plugins'
   | 'memory'
   | 'health'
   | 'permissions';
@@ -43,6 +43,10 @@ interface SidebarProps {
   memoryNotes?: string[];
   onAddMemoryNote?: (note: string) => void;
   rules?: any[];
+  plugins?: PluginDefinition[];
+  onTogglePlugin?: (id: string) => void;
+  isOpen: boolean;
+  onToggleOpen: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -185,6 +189,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </button>
 
         <button
+          onClick={() => onTabChange('plugins')}
+          className={`p-2 rounded hover:text-white transition-colors relative ${
+            activeTab === 'plugins' ? 'text-white bg-dcode-surface' : 'text-zinc-500'
+          }`}
+          title="Plugins & Extensions"
+        >
+          <Puzzle className="w-5 h-5" />
+          {activeTab === 'plugins' && (
+            <div className="absolute left-0 top-1 bottom-1 w-0.5 bg-blue-500 rounded-r" />
+          )}
+        </button>
+
+        <button
           onClick={() => onTabChange('memory')}
           className={`p-2 rounded hover:text-white transition-colors relative ${
             activeTab === 'memory' ? 'text-white bg-dcode-surface' : 'text-zinc-500'
@@ -224,20 +241,33 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </button>
       </div>
 
-      {/* Primary Sidebar Content View */}
-      <div className="w-64 flex flex-col bg-dcode-surface select-none">
+      {/* Primary Sidebar Content View with smooth slide-hiding transition */}
+      <div
+        className={`flex flex-col bg-dcode-surface select-none transition-all duration-200 overflow-hidden border-r border-dcode-border ${
+          isOpen ? 'w-64 opacity-100' : 'w-0 opacity-0 border-r-0'
+        }`}
+      >
         {/* Header */}
         <div className="h-9 px-3 border-b border-dcode-border flex items-center justify-between text-xs font-semibold text-zinc-300 uppercase tracking-wider">
           <span>{activeTab}</span>
-          {activeTab === 'explorer' && (
+          <div className="flex items-center space-x-1">
+            {activeTab === 'explorer' && (
+              <button
+                onClick={onRefreshFiles}
+                className="p-1 hover:bg-dcode-surface2 rounded text-zinc-400 hover:text-zinc-100"
+                title="Refresh Files"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+              </button>
+            )}
             <button
-              onClick={onRefreshFiles}
+              onClick={onToggleOpen}
               className="p-1 hover:bg-dcode-surface2 rounded text-zinc-400 hover:text-zinc-100"
-              title="Refresh Files"
+              title="Hide Sidebar"
             >
-              <RefreshCw className="w-3.5 h-3.5" />
+              <ChevronRight className="w-3.5 h-3.5 rotate-180" />
             </button>
-          )}
+          </div>
         </div>
 
         {/* Body based on Tab */}
@@ -279,6 +309,65 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </span>
               </div>
               <div className="text-zinc-500 italic">Working tree clean or files tracked by Git.</div>
+            </div>
+          )}
+
+          {activeTab === 'tasks' && (
+            <div className="space-y-3 text-xs">
+              <div className="font-semibold text-zinc-300">Active Agent Goals</div>
+              <div className="bg-dcode-bg border border-dcode-border p-2.5 rounded text-zinc-400 space-y-1.5">
+                <div className="flex items-center space-x-2 text-blue-400 font-medium">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                  <span>Autonomous Iteration Plan</span>
+                </div>
+                <div className="text-[11px] text-zinc-500">
+                  Tasks will automatically populate here as you instruct the agent.
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'plugins' && (
+            <div className="space-y-3 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-zinc-200">Extension Marketplace</span>
+                <span className="text-[10px] text-blue-400 bg-blue-950 px-1.5 py-0.5 rounded font-mono">
+                  {plugins?.filter(p => p.enabled).length || 0} active
+                </span>
+              </div>
+              <p className="text-[11px] text-zinc-500">
+                Enhance Dcode with commercial plugins, static linters, and autonomous copilots.
+              </p>
+
+              <div className="space-y-2">
+                {plugins?.map(p => (
+                  <div
+                    key={p.id}
+                    className="p-2.5 bg-dcode-bg border border-dcode-border rounded-lg space-y-2 transition-colors hover:border-zinc-700"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="font-semibold text-zinc-200 flex items-center space-x-1.5">
+                          <span>{p.name}</span>
+                          <span className="text-[9px] text-zinc-500 font-mono">v{p.version}</span>
+                        </div>
+                        <div className="text-[10px] text-zinc-400 mt-0.5">by {p.author}</div>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={p.enabled}
+                        onChange={() => onTogglePlugin && onTogglePlugin(p.id)}
+                        className="rounded bg-zinc-800 border-zinc-700 text-blue-600 focus:ring-0 cursor-pointer"
+                      />
+                    </div>
+                    <p className="text-[11px] text-zinc-400 leading-snug">{p.description}</p>
+                    <div className="flex items-center justify-between text-[10px] text-zinc-500 font-mono pt-1 border-t border-dcode-border/40">
+                      <span className="capitalize">{p.category}</span>
+                      <span>★ {p.rating} ({p.downloads?.toLocaleString()} installs)</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 

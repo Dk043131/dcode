@@ -15,11 +15,12 @@ const index_js_1 = require("./providers/index.js");
 const index_js_2 = require("./tools/index.js");
 const context_js_1 = require("./agent/context.js");
 const orchestrator_js_1 = require("./agent/orchestrator.js");
+const index_js_3 = require("./plugins/index.js");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const server = http_1.default.createServer(app);
 const wss = new ws_1.WebSocketServer({ server, path: '/ws' });
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3002;
 const WORKSPACE_ROOT = process.env.WORKSPACE_ROOT || process.cwd();
 // Core Systems
 const security = new security_js_1.SecurityManager(WORKSPACE_ROOT);
@@ -27,6 +28,7 @@ const providerManager = new index_js_1.ProviderManager();
 const toolRegistry = new index_js_2.ToolRegistry(WORKSPACE_ROOT, security);
 const contextEngine = new context_js_1.ContextEngine(WORKSPACE_ROOT);
 const orchestrator = new orchestrator_js_1.AgentOrchestrator(providerManager, toolRegistry, security, contextEngine);
+const pluginManager = new index_js_3.PluginManager();
 app.use((0, cors_1.default)());
 app.use(express_1.default.json({ limit: '10mb' }));
 // Broadcast helper for WebSockets
@@ -161,6 +163,14 @@ app.get('/api/checkpoints', (req, res) => {
 app.post('/api/checkpoints/:id/rollback', async (req, res) => {
     const ok = await toolRegistry.rollbackCheckpoint(req.params.id);
     res.json({ success: ok });
+});
+// Plugins & Marketplace API
+app.get('/api/plugins', (req, res) => {
+    res.json(pluginManager.getPlugins());
+});
+app.post('/api/plugins/:id/toggle', (req, res) => {
+    const updated = pluginManager.togglePlugin(req.params.id);
+    res.json({ success: !!updated, plugin: updated });
 });
 // Sessions API
 app.get('/api/sessions', (req, res) => {

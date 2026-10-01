@@ -45,6 +45,11 @@ export default function App() {
   // Checkpoints
   const [checkpoints, setCheckpoints] = useState<CodeCheckpoint[]>([]);
 
+  // Slide Hiding & UX States
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isAgentPanelOpen, setIsAgentPanelOpen] = useState(true);
+  const [plugins, setPlugins] = useState<any[]>([]);
+
   // Modals
   const [isModelSelectorOpen, setIsModelSelectorOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -68,6 +73,7 @@ export default function App() {
     fetchModels();
     fetchCheckpoints();
     fetchSecurityRules();
+    fetchPlugins();
     createOrFetchSession();
 
     // Setup global Cmd+K shortcut
@@ -162,6 +168,26 @@ export default function App() {
       const res = await fetch('/api/security/rules');
       const data = await res.json();
       setSecurityRules(data);
+    } catch {}
+  };
+
+  const fetchPlugins = async () => {
+    try {
+      const res = await fetch('/api/plugins');
+      const data = await res.json();
+      setPlugins(data);
+    } catch {}
+  };
+
+  const handleTogglePlugin = async (pluginId: string) => {
+    try {
+      const res = await fetch(`/api/plugins/${pluginId}/toggle`, { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        setPlugins(prev =>
+          prev.map(p => (p.id === pluginId ? { ...p, enabled: !p.enabled } : p))
+        );
+      }
     } catch {}
   };
 
@@ -296,6 +322,10 @@ export default function App() {
         onOpenSettings={() => setIsSettingsOpen(true)}
         activeStatusText={activeStatusText}
         providerStatus="ready"
+        isSidebarOpen={isSidebarOpen}
+        onToggleSidebar={() => setIsSidebarOpen(prev => !prev)}
+        isAgentPanelOpen={isAgentPanelOpen}
+        onToggleAgentPanel={() => setIsAgentPanelOpen(prev => !prev)}
       />
 
       {/* Main Center Workspace */}
@@ -312,6 +342,10 @@ export default function App() {
           memoryNotes={memoryNotes}
           onAddMemoryNote={note => setMemoryNotes(prev => [...prev, note])}
           rules={securityRules}
+          plugins={plugins}
+          onTogglePlugin={handleTogglePlugin}
+          isOpen={isSidebarOpen}
+          onToggleOpen={() => setIsSidebarOpen(prev => !prev)}
         />
 
         {/* Center Editor & Bottom Panels */}
@@ -340,6 +374,8 @@ export default function App() {
           isRunning={isRunning}
           onStop={handleToggleRun}
           activeExplanation={activeExplanation}
+          isOpen={isAgentPanelOpen}
+          onToggleOpen={() => setIsAgentPanelOpen(prev => !prev)}
         />
       </div>
 
